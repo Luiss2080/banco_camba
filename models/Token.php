@@ -106,4 +106,23 @@ class Token
         }
         return $cuentas;
     }
+    public function getTarjeta()  {
+        $select = 'SELECT * FROM tarjeta WHERE idTarjeta = :idTarjeta';
+        $stmt = $this->conn->prepare($select);
+        $stmt->bindParam(':idTarjeta', $this->idTarjeta);
+        $stmt->execute();
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        die(var_dump($row));
+        $tarjeta = new Tarjeta($this->conn);
+        $tarjeta->idTarjeta = $row['idTarjeta'];
+        $tarjeta->hash = $row['hash'];
+        $tarjeta->estado = $row['estado'];
+        $tarjeta->tipoTarjeta = $row['tipoTarjeta'];
+        $tarjeta->nroTarjeta = $row['nroTarjeta'];
+        $tarjeta->cvv = $row['cvv'];
+        $tarjeta->fechaExpiracion = $row['fechaExpiracion'];
+        $tarjeta->pin = $row['pin'];
+        $tarjeta->idCuenta = $row['idCuenta'];
+        return $tarjeta;
+    }
 }

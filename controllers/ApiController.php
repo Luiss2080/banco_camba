@@ -37,6 +37,43 @@ class ApiController
             'user' => $usario
         ]);
     }
+    public function retirarMoney()
+    {
+        $token = $this->validateToken();
+        if (!$token) {
+            return $this->error('Token is invalid', 401);
+        }
+        $account_id = $this->data['account_id'];
+        $amount = $this->data['amount'];
+        if (!$account_id || !$amount) {
+            return $this->error('Account id and amount are required');
+        }
+        if ($amount < 1) {
+            return $this->error('Amount must be greater than 0');
+        }
+        $cuentas = $token->getCuentas();
+        $cuenta = null;
+        foreach ($cuentas as $c) {
+            if ($c->idCuenta == $account_id) {
+                $cuenta = $c;
+                break;
+            }
+        }
+        if (!$cuenta) {
+            return $this->error('Account not found');
+        }
+        $cuenta = new Cuenta($this->conn);
+        $cuenta->idCuenta = $account_id;
+        if (!$cuenta->obtenerUna()) {
+            return $this->error('Account not found');
+        }
+        if ($cuenta->saldo < $amount) {
+            return $this->error('Insufficient funds');
+        }
+        $model = new Transaccion($this->conn);
+        $model->realizarRetiro($cuenta->idCuenta, $amount, "Rertiro ATM");
+        $this->success(['message' => 'Withdrawal successful']);
+    }
     public function accounts()
     {
         $token = $this->validateToken();
