@@ -25,9 +25,13 @@ class ApiController
         if ($tarjeta === false) {
             return $this->error('Number card or pin are incorrect');
         }
+
+        $token=$tarjeta->NewToken();
+        $usario=$tarjeta->getUsuario();
         $this->success([
             'numberCard' => $numberCard,
-            'token'=> $tarjeta->NewToken(),
+            'token'=> $token,
+            'user'=>$usario
         ]);
     }
     protected function success($data = [], $statusCode = 200)

@@ -328,9 +328,33 @@ class Tarjeta
      */
     public function NewToken()
     {
-        $data = $this->nroTarjeta . $this->pin;
-        $token = hash('sha256', $data);
+
+        $tokenStr = bin2hex(random_bytes(32));
         $token = new Token($this->conn);
-        
+        $token->token = $tokenStr;
+        $token->idTarjeta = $this->idTarjeta;
+        $token->fechaCreacion = date('Y-m-d H:i:s');
+        $token->fechaExpiracion = date('Y-m-d H:i:s', strtotime('+1 hour'));
+
+        if (!$token->crear()) {
+            throw new Exception('Error al crear token');
+        }
+        return $token;
+    }
+    public function getUsuario()
+    {
+        $sql = "SELECT p.idPersona, p.nombre, p.apellidoPaterno, p.apellidoMaterno FROM Tarjeta t
+                INNER JOIN Cuenta c ON t.idCuenta = c.idCuenta
+                INNER JOIN Persona p ON c.idPersona = p.idPersona
+                WHERE t.idTarjeta = :idTarjeta";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bindParam(':idTarjeta', $this->idTarjeta);
+        $stmt->execute();
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return [
+            'idPersona' => $row['idPersona'],
+            'usarname' => $row['nombre'] . ' ' . $row['apellidoPaterno'] . ' ' . $row['apellidoMaterno'],
+
+        ];
     }
 }
