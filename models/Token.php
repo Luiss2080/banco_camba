@@ -39,4 +39,71 @@ class Token
         }
         return false;
     }
+    public static function validate($token, $conn)
+    {
+        $query = 'SELECT * FROM token WHERE token = :token AND fechaExpiracion > NOW()';
+        $stmt = $conn->prepare($query);
+        $token = htmlspecialchars(strip_tags($token));
+        $stmt->bindParam(':token', $token);
+        $stmt->execute();
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($row) {
+            $newToken = new Token($conn);
+            $newToken->idToken = $row['idToken'];
+            $newToken->token = $row['token'];
+            $newToken->fechaCreacion = $row['fechaCreacion'];
+            $newToken->fechaExpiracion = $row['fechaExpiracion'];
+            $newToken->idTarjeta = $row['idTarjeta'];
+            return $newToken;
+        }
+        return false;
+    }
+    public function getCuentas()
+    {
+        // Obtener el idTarjeta usando el token
+        $select = 'SELECT idTarjeta FROM token WHERE token = :token';
+        $stmt = $this->conn->prepare($select);
+        $token = ($this->token);
+        $stmt->bindParam(':token', $token);
+        $stmt->execute();
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        $idTarjeta = $result['idTarjeta'];
+
+        // Usar el idTarjeta para obtener el idCuenta
+        $select = 'SELECT idCuenta FROM tarjeta WHERE idTarjeta = :idTarjeta';
+        $stmt = $this->conn->prepare($select);
+        $stmt->bindParam(':idTarjeta', $idTarjeta);
+        $stmt->execute();
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        $idCuenta = $result['idCuenta'];
+
+        // Usar el idCuenta para obtener el idPersona
+        $select = 'SELECT idPersona FROM cuenta WHERE idCuenta = :idCuenta';
+        $stmt = $this->conn->prepare($select);
+        $stmt->bindParam(':idCuenta', $idCuenta);
+        $stmt->execute();
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        $idPersona = $result['idPersona'];
+
+        // Finalmente, obtener todas las cuentas de la persona
+        $select = 'SELECT * FROM cuenta WHERE idPersona = :idPersona';
+        $stmt = $this->conn->prepare($select);
+        $stmt->bindParam(':idPersona', $idPersona);
+        $stmt->execute();
+        $cuentas = [];
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $cuenta = new Cuenta($this->conn);
+            $cuenta->idCuenta = $row['idCuenta'];
+            $cuenta->saldo = $row['saldo'];
+            $cuenta->tipoCuenta = $row['tipoCuenta'];
+            $cuenta->tipoMoneda = $row['tipoMoneda'];
+            $cuenta->fechaApertura = $row['fechaApertura'];
+            $cuenta->estado = $row['estado'];
+            $cuenta->nroCuenta = $row['nroCuenta'];
+            $cuenta->idPersona = $row['idPersona'];
+            $cuenta->hash = $row['hash'];
+            $cuentas[] = $cuenta;
+        }
+        return $cuentas;
+    }
 }

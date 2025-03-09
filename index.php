@@ -33,7 +33,13 @@ require_once 'models/Usuario.php';
 require_once 'models/Bienvenida.php';
 require_once 'models/Token.php';
 
-
+function dd(...$paran)
+{
+    echo "<pre>";
+    var_dump(...$paran);
+    echo "</pre>";
+    die();
+}
 
 // MODIFICACIÓN: Asegurarse de que el idioma está cargado correctamente
 // Inicializar la sesión
@@ -78,10 +84,10 @@ $controllerFile = "controllers/{$controllerName}.php";
 // Verificar si el archivo del controlador existe
 if (file_exists($controllerFile)) {
     require_once $controllerFile;
-    
+
     // Crear instancia del controlador
     $controllerInstance = new $controllerName();
-    
+
     // Verificar si el método de acción existe
     if (method_exists($controllerInstance, $action)) {
         // Ejecutar la acción
@@ -96,4 +102,3 @@ if (file_exists($controllerFile)) {
     include 'views/error.php';
     die("El controlador '$controllerName' no existe.");
 }
-?>

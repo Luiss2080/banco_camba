@@ -3,6 +3,7 @@
 class ApiController
 {
     public $data = [];
+    public $conn;
     public function __construct()
     {
         header('Access-Control-Allow-Origin: *');
@@ -10,6 +11,9 @@ class ApiController
         header('Access-Control-Allow-Headers: Content-Type');
         header('Content-Type: application/json');
         $this->data = json_decode(file_get_contents('php://input'), true);
+        $database = new Database();
+        $db = $database->connect();
+        $this->conn = $db;
     }
     public function login()
     {
@@ -18,21 +22,45 @@ class ApiController
         if (!$numberCard || !$pin) {
             return $this->error('Number card and pin are required');
         }
-        $database = new Database();
-        $db = $database->connect();
-        
-        $tarjeta = (new Tarjeta($db))->login($numberCard, $pin);
+
+
+        $tarjeta = (new Tarjeta($this->conn))->login($numberCard, $pin);
         if ($tarjeta === false) {
             return $this->error('Number card or pin are incorrect');
         }
 
-        $token=$tarjeta->NewToken();
-        $usario=$tarjeta->getUsuario();
+        $token = $tarjeta->NewToken();
+        $usario = $tarjeta->getUsuario();
         $this->success([
             'numberCard' => $numberCard,
-            'token'=> $token,
-            'user'=>$usario
+            'token' => $token,
+            'user' => $usario
         ]);
+    }
+    public function accounts()
+    {
+        $token = $this->validateToken();
+        if (!$token) {
+            return $this->error('Token is invalid', 401);
+        }
+        $cuentas  = $token->getCuentas();
+        $this->success($cuentas);
+    }
+    /**
+     * @return Token|null
+     */
+    protected function validateToken()
+    {
+        // vemos en la peticion actual el token en autorization o X-Mi-Token
+        $token = null;
+        if (isset($_SERVER['HTTP_AUTHORIZATION'])) {
+            $token = $_SERVER['HTTP_AUTHORIZATION'];
+        } elseif (isset($_SERVER['HTTP_X_MI_TOKEN'])) {
+            $token = $_SERVER['HTTP_X_MI_TOKEN'];
+        }
+        // eliminar Bearer 
+        $token = str_replace('Bearer ', '', $token);
+        return Token::validate($token, $this->conn);
     }
     protected function success($data = [], $statusCode = 200)
     {
