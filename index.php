@@ -91,7 +91,11 @@ if (file_exists($controllerFile)) {
     // Verificar si el método de acción existe
     if (method_exists($controllerInstance, $action)) {
         // Ejecutar la acción
-        $controllerInstance->$action();
+        try {
+            $controllerInstance->$action();
+        } catch (Exception $e) {
+            die($e->getMessage());
+        }
     } else {
         // Acción no encontrada
         include 'views/error.php';
