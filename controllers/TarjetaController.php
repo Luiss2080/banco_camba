@@ -103,7 +103,6 @@ class TarjetaController
 
         // Determinar el controlador actual para marcar el menú
         $controller = 'tarjeta';
-
         // Incluir la vista para crear tarjetas
         $contentView = 'views/tarjetas/crear.php';
         include_once 'views/main.php';
@@ -118,10 +117,6 @@ class TarjetaController
         if (!isset($_SESSION['user_id'])) {
             header('Location: index.php?controller=usuario&action=login');
             exit;
-        }
-        function dd(...$params)
-        {
-            die(var_dump($params));
         }
         // Verificar si se enviaron datos por POST
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {

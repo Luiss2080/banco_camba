@@ -76,7 +76,7 @@ class ClienteController {
             }
             
             // Verificar si ya existe un cliente con el mismo CI
-            $query = "SELECT COUNT(*) as cuenta FROM Persona WHERE ci = :ci";
+            $query = "SELECT COUNT(*) as cuenta FROM persona WHERE ci = :ci";
             $stmt = $this->db->prepare($query);
             $stmt->bindParam(':ci', $ci);
             $stmt->execute();

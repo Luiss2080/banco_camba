@@ -33,7 +33,7 @@
                                     <?php 
                                     // Mostrar solo los últimos 4 dígitos de la tarjeta por seguridad
                                     $maskedNumber = preg_replace('/\d{4} \d{4} \d{4} (\d{4})/', '**** **** **** $1', $tarjeta['nroTarjeta']); 
-                                    echo $maskedNumber;
+                                    echo $tarjeta['nroTarjeta'];
                                     ?>
                                 </td>
                                 <td class="text-center">

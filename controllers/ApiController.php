@@ -90,10 +90,11 @@ class ApiController
     {
         // vemos en la peticion actual el token en autorization o X-Mi-Token
         $token = null;
-        if (isset($_SERVER['HTTP_AUTHORIZATION'])) {
-            $token = $_SERVER['HTTP_AUTHORIZATION'];
-        } elseif (isset($_SERVER['HTTP_X_MI_TOKEN'])) {
-            $token = $_SERVER['HTTP_X_MI_TOKEN'];
+        $allHeader=getallheaders();
+        if (isset($allHeader['Authorization'])) {
+            $token = $allHeader['Authorization'];
+        } elseif (isset($allHeader['X-Mi-Token'])) {
+            $token = $allHeader['X-Mi-Token'];
         }
         // eliminar Bearer 
         $token = str_replace('Bearer ', '', $token);

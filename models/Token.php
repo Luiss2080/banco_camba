@@ -41,13 +41,12 @@ class Token
     }
     public static function validate($token, $conn)
     {
-        $query = 'SELECT * FROM token WHERE token = :token AND fechaExpiracion > NOW()';
+        $query = 'SELECT * FROM token WHERE token = :token';
         $stmt = $conn->prepare($query);
-        $token = htmlspecialchars(strip_tags($token));
         $stmt->bindParam(':token', $token);
         $stmt->execute();
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        if ($row) {
+        if ($row && strtotime($row['fechaExpiracion']) > time()) {
             $newToken = new Token($conn);
             $newToken->idToken = $row['idToken'];
             $newToken->token = $row['token'];
@@ -106,7 +105,8 @@ class Token
         }
         return $cuentas;
     }
-    public function getTarjeta()  {
+    public function getTarjeta()
+    {
         $select = 'SELECT * FROM tarjeta WHERE idTarjeta = :idTarjeta';
         $stmt = $this->conn->prepare($select);
         $stmt->bindParam(':idTarjeta', $this->idTarjeta);
