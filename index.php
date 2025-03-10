@@ -1,4 +1,11 @@
 <?php
+function dd(...$paran)
+{
+    echo "<pre>";
+    var_dump(...$paran);
+    echo "</pre>";
+    die();
+}
 /* ---------- BANCO CAMBA - PUNTO DE ENTRADA PRINCIPAL ---------- */
 
 // Implementación de cabeceras de seguridad HTTP
@@ -33,13 +40,6 @@ require_once 'models/Usuario.php';
 require_once 'models/Bienvenida.php';
 require_once 'models/Token.php';
 
-function dd(...$paran)
-{
-    echo "<pre>";
-    var_dump(...$paran);
-    echo "</pre>";
-    die();
-}
 
 // MODIFICACIÓN: Asegurarse de que el idioma está cargado correctamente
 // Inicializar la sesión
@@ -94,7 +94,16 @@ if (file_exists($controllerFile)) {
         try {
             $controllerInstance->$action();
         } catch (Exception $e) {
-            die($e->getMessage());
+            echo "<pre>";
+            var_dump($e);
+            echo "</pre>";
+            echo "<pre>";
+            var_dump($e->getLine());
+            echo "</pre>";
+            echo "<pre>";
+            var_dump($e->getMessage());
+            echo "</pre>";
+            die();
         }
     } else {
         // Acción no encontrada
