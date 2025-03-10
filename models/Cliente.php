@@ -34,8 +34,8 @@ class Cliente {
      */
     public function obtenerTodos() {
         $query = "SELECT p.*, o.nombre as oficina_nombre
-                 FROM Persona p
-                 INNER JOIN Oficina o ON p.idOficina = o.idOficina
+                 FROM persona p
+                 INNER JOIN oficina o ON p.idOficina = o.idOficina
                  ORDER BY p.apellidoPaterno, p.apellidoMaterno, p.nombre";
         
         $stmt = $this->conn->prepare($query);
@@ -50,8 +50,8 @@ class Cliente {
      */
     public function obtenerUno() {
         $query = "SELECT p.*, o.nombre as oficina_nombre
-                 FROM Persona p
-                 INNER JOIN Oficina o ON p.idOficina = o.idOficina
+                 FROM persona p
+                 INNER JOIN oficina o ON p.idOficina = o.idOficina
                  WHERE p.idPersona = :id";
         
         $stmt = $this->conn->prepare($query);
@@ -87,7 +87,7 @@ class Cliente {
             $this->hash = bin2hex(random_bytes(16));
         }
         
-        $query = "INSERT INTO Persona
+        $query = "INSERT INTO persona
                  (nombre, apellidoPaterno, apellidoMaterno, direccion, telefono, email, fechaNacimiento, ci, idOficina, hash)
                  VALUES
                  (:nombre, :apellidoPaterno, :apellidoMaterno, :direccion, :telefono, :email, :fechaNacimiento, :ci, :idOficina, :hash)";
@@ -130,7 +130,7 @@ class Cliente {
      * @return boolean
      */
     public function actualizar() {
-        $query = "UPDATE Persona SET
+        $query = "UPDATE persona SET
                 nombre = :nombre,
                 apellidoPaterno = :apellidoPaterno,
                 apellidoMaterno = :apellidoMaterno,
@@ -180,7 +180,7 @@ class Cliente {
      */
     public function eliminar() {
         // Primero verificar si el cliente tiene cuentas
-        $query = "SELECT COUNT(*) as total FROM Cuenta WHERE idPersona = :idPersona";
+        $query = "SELECT COUNT(*) as total FROM cuenta WHERE idPersona = :idPersona";
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(':idPersona', $this->idPersona);
         $stmt->execute();
@@ -192,7 +192,7 @@ class Cliente {
         }
         
         // Se puede eliminar
-        $query = "DELETE FROM Persona WHERE idPersona = :idPersona";
+        $query = "DELETE FROM persona WHERE idPersona = :idPersona";
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(':idPersona', $this->idPersona);
         
@@ -210,8 +210,8 @@ class Cliente {
      */
     public function buscar($keyword) {
         $query = "SELECT p.*, o.nombre as oficina_nombre
-                 FROM Persona p
-                 INNER JOIN Oficina o ON p.idOficina = o.idOficina
+                 FROM persona p
+                 INNER JOIN oficina o ON p.idOficina = o.idOficina
                  WHERE p.nombre LIKE :keyword
                  OR p.apellidoPaterno LIKE :keyword
                  OR p.apellidoMaterno LIKE :keyword

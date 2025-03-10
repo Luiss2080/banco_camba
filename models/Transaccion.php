@@ -36,9 +36,9 @@ class Transaccion {
     public function obtenerTodas() {
         $query = "SELECT t.*, c.nroCuenta, 
                   CONCAT(p.nombre, ' ', p.apellidoPaterno, ' ', p.apellidoMaterno) as cliente_nombre
-                  FROM Transaccion t
-                  INNER JOIN Cuenta c ON t.idCuenta = c.idCuenta
-                  INNER JOIN Persona p ON c.idPersona = p.idPersona
+                  FROM transaccion t
+                  INNER JOIN cuenta c ON t.idCuenta = c.idCuenta
+                  INNER JOIN persona p ON c.idPersona = p.idPersona
                   ORDER BY t.fecha DESC, t.hora DESC";
         
         $stmt = $this->conn->prepare($query);
@@ -54,9 +54,9 @@ class Transaccion {
     public function obtenerUna() {
         $query = "SELECT t.*, c.nroCuenta,
                   CONCAT(p.nombre, ' ', p.apellidoPaterno, ' ', p.apellidoMaterno) as cliente_nombre
-                  FROM Transaccion t
-                  INNER JOIN Cuenta c ON t.idCuenta = c.idCuenta
-                  INNER JOIN Persona p ON c.idPersona = p.idPersona
+                  FROM transaccion t
+                  INNER JOIN cuenta c ON t.idCuenta = c.idCuenta
+                  INNER JOIN persona p ON c.idPersona = p.idPersona
                   WHERE t.idTransaccion = :id";
         
         $stmt = $this->conn->prepare($query);
@@ -88,7 +88,7 @@ class Transaccion {
      * @return PDOStatement
      */
     public function obtenerPorCuenta($idCuenta) {
-        $query = "SELECT * FROM Transaccion 
+        $query = "SELECT * FROM transaccion 
                   WHERE idCuenta = :idCuenta 
                   ORDER BY fecha DESC, hora DESC";
         
@@ -107,7 +107,7 @@ class Transaccion {
      * @return PDOStatement
      */
     public function obtenerPorRangoFechas($idCuenta, $fechaInicio, $fechaFin) {
-        $query = "SELECT * FROM Transaccion 
+        $query = "SELECT * FROM transaccion 
                   WHERE idCuenta = :idCuenta 
                   AND fecha BETWEEN :fechaInicio AND :fechaFin
                   ORDER BY fecha DESC, hora DESC";
@@ -130,9 +130,9 @@ class Transaccion {
     public function obtenerPorRangoFechasGlobal($fechaInicio, $fechaFin) {
         $query = "SELECT t.*, c.nroCuenta, 
                   CONCAT(p.nombre, ' ', p.apellidoPaterno, ' ', p.apellidoMaterno) as cliente_nombre
-                  FROM Transaccion t
-                  INNER JOIN Cuenta c ON t.idCuenta = c.idCuenta
-                  INNER JOIN Persona p ON c.idPersona = p.idPersona
+                  FROM transaccion t
+                  INNER JOIN cuenta c ON t.idCuenta = c.idCuenta
+                  INNER JOIN persona p ON c.idPersona = p.idPersona
                   WHERE t.fecha BETWEEN :fechaInicio AND :fechaFin
                   ORDER BY t.fecha DESC, t.hora DESC";
         
@@ -160,7 +160,7 @@ class Transaccion {
             }
             
             // Crear la transacción
-            $query = "INSERT INTO Transaccion
+            $query = "INSERT INTO transaccion
                      (tipoTransaccion, fecha, hora, descripcion, monto, idCuenta, 
                       saldoResultante, cuentaOrigen, cuentaDestino, hash)
                      VALUES
@@ -214,7 +214,7 @@ class Transaccion {
             }
             
             // Crear la transacción
-            $query = "INSERT INTO Transaccion
+            $query = "INSERT INTO transaccion
                      (tipoTransaccion, fecha, hora, descripcion, monto, idCuenta, 
                       saldoResultante, cuentaOrigen, cuentaDestino, hash)
                      VALUES
@@ -278,7 +278,7 @@ class Transaccion {
             // Actualizar saldo de la cuenta
             $nuevoSaldo = $cuenta->saldo + $monto;
             
-            $query = "UPDATE Cuenta SET saldo = :saldo WHERE idCuenta = :idCuenta";
+            $query = "UPDATE cuenta SET saldo = :saldo WHERE idCuenta = :idCuenta";
             $stmt = $this->conn->prepare($query);
             $stmt->bindParam(':saldo', $nuevoSaldo);
             $stmt->bindParam(':idCuenta', $idCuenta);
@@ -343,7 +343,7 @@ class Transaccion {
             // Actualizar saldo de la cuenta
             $nuevoSaldo = $cuenta->saldo - $monto;
             
-            $query = "UPDATE Cuenta SET saldo = :saldo WHERE idCuenta = :idCuenta";
+            $query = "UPDATE cuenta SET saldo = :saldo WHERE idCuenta = :idCuenta";
             $stmt = $this->conn->prepare($query);
             $stmt->bindParam(':saldo', $nuevoSaldo);
             $stmt->bindParam(':idCuenta', $idCuenta);
@@ -427,7 +427,7 @@ class Transaccion {
             // Actualizar saldo de la cuenta origen (restar)
             $nuevoSaldoOrigen = $cuentaOrigen->saldo - $monto;
             
-            $queryOrigen = "UPDATE Cuenta SET saldo = :saldo WHERE idCuenta = :idCuenta";
+            $queryOrigen = "UPDATE cuenta SET saldo = :saldo WHERE idCuenta = :idCuenta";
             $stmtOrigen = $this->conn->prepare($queryOrigen);
             $stmtOrigen->bindParam(':saldo', $nuevoSaldoOrigen);
             $stmtOrigen->bindParam(':idCuenta', $idCuentaOrigen);
@@ -436,7 +436,7 @@ class Transaccion {
             // Actualizar saldo de la cuenta destino (sumar)
             $nuevoSaldoDestino = $cuentaDestino->saldo + $monto;
             
-            $queryDestino = "UPDATE Cuenta SET saldo = :saldo WHERE idCuenta = :idCuenta";
+            $queryDestino = "UPDATE cuenta SET saldo = :saldo WHERE idCuenta = :idCuenta";
             $stmtDestino = $this->conn->prepare($queryDestino);
             $stmtDestino->bindParam(':saldo', $nuevoSaldoDestino);
             $stmtDestino->bindParam(':idCuenta', $idCuentaDestino);
@@ -494,7 +494,7 @@ class Transaccion {
      */
     public function contarTransaccionesHoy() {
         $hoy = date('Y-m-d');
-        $query = "SELECT COUNT(*) as total FROM Transaccion WHERE fecha = :fecha";
+        $query = "SELECT COUNT(*) as total FROM transaccion WHERE fecha = :fecha";
         
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(':fecha', $hoy);
@@ -512,9 +512,9 @@ class Transaccion {
     public function obtenerRecientes($limit = 10) {
         $query = "SELECT t.*, c.nroCuenta, 
                   CONCAT(p.nombre, ' ', p.apellidoPaterno, ' ', p.apellidoMaterno) as cliente_nombre
-                  FROM Transaccion t
-                  INNER JOIN Cuenta c ON t.idCuenta = c.idCuenta
-                  INNER JOIN Persona p ON c.idPersona = p.idPersona
+                  FROM transaccion t
+                  INNER JOIN cuenta c ON t.idCuenta = c.idCuenta
+                  INNER JOIN persona p ON c.idPersona = p.idPersona
                   ORDER BY t.fecha DESC, t.hora DESC
                   LIMIT :limit";
         

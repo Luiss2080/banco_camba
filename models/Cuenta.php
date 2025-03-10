@@ -33,8 +33,8 @@ class Cuenta {
     public function obtenerTodas() {
         $query = "SELECT c.*, 
                   CONCAT(p.nombre, ' ', p.apellidoPaterno, ' ', p.apellidoMaterno) as cliente_nombre
-                  FROM Cuenta c
-                  INNER JOIN Persona p ON c.idPersona = p.idPersona
+                  FROM cuenta c
+                  INNER JOIN persona p ON c.idPersona = p.idPersona
                   ORDER BY c.fechaApertura DESC";
         
         $stmt = $this->conn->prepare($query);
@@ -50,8 +50,8 @@ class Cuenta {
     public function obtenerUna() {
         $query = "SELECT c.*, 
                   CONCAT(p.nombre, ' ', p.apellidoPaterno, ' ', p.apellidoMaterno) as cliente_nombre
-                  FROM Cuenta c
-                  INNER JOIN Persona p ON c.idPersona = p.idPersona
+                  FROM cuenta c
+                  INNER JOIN persona p ON c.idPersona = p.idPersona
                   WHERE c.idCuenta = :id";
         
         $stmt = $this->conn->prepare($query);
@@ -81,7 +81,7 @@ class Cuenta {
      * @return PDOStatement
      */
     public function obtenerPorCliente($idPersona) {
-        $query = "SELECT * FROM Cuenta WHERE idPersona = :idPersona ORDER BY fechaApertura DESC";
+        $query = "SELECT * FROM cuenta WHERE idPersona = :idPersona ORDER BY fechaApertura DESC";
         
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(':idPersona', $idPersona);
@@ -103,7 +103,7 @@ class Cuenta {
             $this->hash = bin2hex(random_bytes(16));
         }
         
-        $query = "INSERT INTO Cuenta
+        $query = "INSERT INTO cuenta
                  (tipoCuenta, tipoMoneda, fechaApertura, estado, nroCuenta, saldo, idPersona, hash)
                  VALUES
                  (:tipoCuenta, :tipoMoneda, :fechaApertura, :estado, :nroCuenta, :saldo, :idPersona, :hash)";
@@ -152,7 +152,7 @@ class Cuenta {
      * @return boolean
      */
     public function actualizar() {
-        $query = "UPDATE Cuenta SET
+        $query = "UPDATE cuenta SET
                 tipoCuenta = :tipoCuenta,
                 estado = :estado
                 WHERE idCuenta = :idCuenta";
@@ -187,7 +187,7 @@ class Cuenta {
         // Calcular nuevo saldo
         $nuevoSaldo = $esDeposito ? $this->saldo + $monto : $this->saldo - $monto;
         
-        $query = "UPDATE Cuenta SET saldo = :saldo WHERE idCuenta = :idCuenta";
+        $query = "UPDATE cuenta SET saldo = :saldo WHERE idCuenta = :idCuenta";
         
         $stmt = $this->conn->prepare($query);
         
@@ -220,7 +220,7 @@ class Cuenta {
      * @return int
      */
     public function contarCuentasActivas() {
-        $query = "SELECT COUNT(*) as total FROM Cuenta WHERE estado = 1";
+        $query = "SELECT COUNT(*) as total FROM cuenta WHERE estado = 1";
         
         $stmt = $this->conn->prepare($query);
         $stmt->execute();
@@ -237,8 +237,8 @@ class Cuenta {
     public function obtenerPorNumeroCuenta($nroCuenta) {
         $query = "SELECT c.*, 
                   CONCAT(p.nombre, ' ', p.apellidoPaterno, ' ', p.apellidoMaterno) as cliente_nombre
-                  FROM Cuenta c
-                  INNER JOIN Persona p ON c.idPersona = p.idPersona
+                  FROM cuenta c
+                  INNER JOIN persona p ON c.idPersona = p.idPersona
                   WHERE c.nroCuenta = :nroCuenta";
         
         $stmt = $this->conn->prepare($query);

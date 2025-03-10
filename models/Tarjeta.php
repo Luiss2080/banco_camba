@@ -35,9 +35,9 @@ class Tarjeta
     public function obtenerTodas()
     {
         $query = "SELECT t.*, c.nroCuenta, p.nombre, p.apellidoPaterno, p.apellidoMaterno 
-                 FROM Tarjeta t
-                 INNER JOIN Cuenta c ON t.idCuenta = c.idCuenta
-                 INNER JOIN Persona p ON c.idPersona = p.idPersona
+                 FROM tarjeta t
+                 INNER JOIN cuenta c ON t.idCuenta = c.idCuenta
+                 INNER JOIN persona p ON c.idPersona = p.idPersona
                  ORDER BY t.idTarjeta DESC";
 
         $stmt = $this->conn->prepare($query);
@@ -53,9 +53,9 @@ class Tarjeta
     public function obtenerUna()
     {
         $query = "SELECT t.*, c.nroCuenta, p.nombre, p.apellidoPaterno, p.apellidoMaterno, p.idPersona, c.tipoMoneda
-                 FROM Tarjeta t
-                 INNER JOIN Cuenta c ON t.idCuenta = c.idCuenta
-                 INNER JOIN Persona p ON c.idPersona = p.idPersona
+                 FROM tarjeta t
+                 INNER JOIN cuenta c ON t.idCuenta = c.idCuenta
+                 INNER JOIN persona p ON c.idPersona = p.idPersona
                  WHERE t.idTarjeta = :id";
 
         $stmt = $this->conn->prepare($query);
@@ -86,7 +86,7 @@ class Tarjeta
      */
     public function obtenerPorCuenta($idCuenta)
     {
-        $query = "SELECT * FROM Tarjeta 
+        $query = "SELECT * FROM tarjeta 
                  WHERE idCuenta = :idCuenta
                  ORDER BY idTarjeta DESC";
 
@@ -108,7 +108,7 @@ class Tarjeta
             $this->hash = bin2hex(random_bytes(16));
         }
 
-        $query = "INSERT INTO Tarjeta
+        $query = "INSERT INTO tarjeta
                  (hash, estado, tipoTarjeta, nroTarjeta, cvv, fechaExpiracion, pin, idCuenta)
                  VALUES
                  (:hash, :estado, :tipoTarjeta, :nroTarjeta, :cvv, :fechaExpiracion, :pin, :idCuenta)";
@@ -146,7 +146,7 @@ class Tarjeta
      */
     public function actualizar()
     {
-        $query = "UPDATE Tarjeta SET
+        $query = "UPDATE tarjeta SET
                 estado = :estado,
                 tipoTarjeta = :tipoTarjeta,
                 nroTarjeta = :nroTarjeta,
@@ -188,7 +188,7 @@ class Tarjeta
      */
     public function cambiarEstado($nuevoEstado)
     {
-        $query = "UPDATE Tarjeta SET
+        $query = "UPDATE tarjeta SET
                 estado = :estado
                 WHERE idTarjeta = :idTarjeta";
 
@@ -212,7 +212,7 @@ class Tarjeta
      */
     public function eliminar()
     {
-        $query = "DELETE FROM Tarjeta WHERE idTarjeta = :idTarjeta";
+        $query = "DELETE FROM tarjeta WHERE idTarjeta = :idTarjeta";
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(':idTarjeta', $this->idTarjeta);
 
@@ -231,12 +231,12 @@ class Tarjeta
     public function existeNumeroTarjeta($nroTarjeta, $idTarjeta = null)
     {
         if ($idTarjeta) {
-            $query = "SELECT COUNT(*) as total FROM Tarjeta WHERE nroTarjeta = :nroTarjeta AND idTarjeta != :idTarjeta";
+            $query = "SELECT COUNT(*) as total FROM tarjeta WHERE nroTarjeta = :nroTarjeta AND idTarjeta != :idTarjeta";
             $stmt = $this->conn->prepare($query);
             $stmt->bindParam(':nroTarjeta', $nroTarjeta);
             $stmt->bindParam(':idTarjeta', $idTarjeta);
         } else {
-            $query = "SELECT COUNT(*) as total FROM Tarjeta WHERE nroTarjeta = :nroTarjeta";
+            $query = "SELECT COUNT(*) as total FROM tarjeta WHERE nroTarjeta = :nroTarjeta";
             $stmt = $this->conn->prepare($query);
             $stmt->bindParam(':nroTarjeta', $nroTarjeta);
         }
@@ -302,7 +302,7 @@ class Tarjeta
      */
     public function login($numberCard, $pin)
     {
-        $sql = "SELECT * FROM Tarjeta WHERE nroTarjeta = :nroTarjeta AND pin = :pin";
+        $sql = "SELECT * FROM tarjeta WHERE nroTarjeta = :nroTarjeta AND pin = :pin";
         $stmt = $this->conn->prepare($sql);
         $stmt->bindParam(':nroTarjeta', $numberCard);
         $stmt->bindParam(':pin', $pin);
@@ -343,9 +343,9 @@ class Tarjeta
     }
     public function getUsuario()
     {
-        $sql = "SELECT p.idPersona, p.nombre, p.apellidoPaterno, p.apellidoMaterno FROM Tarjeta t
-                INNER JOIN Cuenta c ON t.idCuenta = c.idCuenta
-                INNER JOIN Persona p ON c.idPersona = p.idPersona
+        $sql = "SELECT p.idPersona, p.nombre, p.apellidoPaterno, p.apellidoMaterno FROM tarjeta t
+                INNER JOIN cuenta c ON t.idCuenta = c.idCuenta
+                INNER JOIN persona p ON c.idPersona = p.idPersona
                 WHERE t.idTarjeta = :idTarjeta";
         $stmt = $this->conn->prepare($sql);
         $stmt->bindParam(':idTarjeta', $this->idTarjeta);

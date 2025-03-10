@@ -19,8 +19,8 @@ class ActividadCuenta {
         $query = "SELECT c.idCuenta, c.nroCuenta, 
                  CONCAT(p.nombre, ' ', p.apellidoPaterno, ' ', p.apellidoMaterno) as cliente_nombre,
                  c.saldo, c.fechaApertura
-                 FROM Cuenta c
-                 INNER JOIN Persona p ON c.idPersona = p.idPersona
+                 FROM cuenta c
+                 INNER JOIN persona p ON c.idPersona = p.idPersona
                  ORDER BY p.nombre, c.fechaApertura DESC";
         
         $stmt = $this->db->prepare($query);
@@ -35,7 +35,7 @@ class ActividadCuenta {
     public function obtenerActividadCuenta($idCuenta, $fechaInicio, $fechaFin) {
         $query = "SELECT t.idTransaccion, t.fecha, t.hora, t.monto, t.tipoTransaccion, 
                   t.descripcion, t.saldoResultante
-                  FROM Transaccion t
+                  FROM transaccion t
                   WHERE t.idCuenta = :idCuenta 
                   AND t.fecha BETWEEN :fechaInicio AND :fechaFin
                   ORDER BY t.fecha DESC, t.hora DESC";
@@ -60,7 +60,7 @@ class ActividadCuenta {
                   SUM(CASE WHEN tipoTransaccion = 1 THEN monto ELSE 0 END) as monto_retiros,
                   SUM(CASE WHEN tipoTransaccion = 2 THEN monto ELSE 0 END) as monto_depositos,
                   MAX(fecha) as ultima_transaccion
-                  FROM Transaccion 
+                  FROM transaccion 
                   WHERE idCuenta = :idCuenta
                   AND fecha BETWEEN :fechaInicio AND :fechaFin";
         
@@ -79,8 +79,8 @@ class ActividadCuenta {
     public function obtenerDetalleCuenta($idCuenta) {
         $query = "SELECT c.idCuenta, c.nroCuenta, c.saldo, c.tipoMoneda, c.fechaApertura,
                   p.idPersona, p.nombre, p.apellidoPaterno, p.apellidoMaterno, p.ci
-                  FROM Cuenta c
-                  INNER JOIN Persona p ON c.idPersona = p.idPersona
+                  FROM cuenta c
+                  INNER JOIN persona p ON c.idPersona = p.idPersona
                   WHERE c.idCuenta = :idCuenta";
         
         $stmt = $this->db->prepare($query);
@@ -109,13 +109,13 @@ class ResumenEjecutivo {
      */
     public function obtenerEstadisticasGenerales($fechaInicio, $fechaFin) {
         $query = "SELECT
-                  (SELECT COUNT(*) FROM Persona WHERE tipo = 'cliente') as total_clientes,
-                  (SELECT COUNT(*) FROM Cuenta) as total_cuentas,
-                  (SELECT SUM(saldo) FROM Cuenta WHERE tipoMoneda = 1) as total_saldo_bolivianos,
-                  (SELECT SUM(saldo) FROM Cuenta WHERE tipoMoneda = 2) as total_saldo_dolares,
-                  (SELECT COUNT(*) FROM Transaccion WHERE fecha BETWEEN :fechaInicio AND :fechaFin) as total_transacciones,
-                  (SELECT SUM(monto) FROM Transaccion WHERE tipoTransaccion = 1 AND fecha BETWEEN :fechaInicio AND :fechaFin) as total_retiros,
-                  (SELECT SUM(monto) FROM Transaccion WHERE tipoTransaccion = 2 AND fecha BETWEEN :fechaInicio AND :fechaFin) as total_depositos";
+                  (SELECT COUNT(*) FROM persona WHERE tipo = 'cliente') as total_clientes,
+                  (SELECT COUNT(*) FROM cuenta) as total_cuentas,
+                  (SELECT SUM(saldo) FROM cuenta WHERE tipoMoneda = 1) as total_saldo_bolivianos,
+                  (SELECT SUM(saldo) FROM cuenta WHERE tipoMoneda = 2) as total_saldo_dolares,
+                  (SELECT COUNT(*) FROM transaccion WHERE fecha BETWEEN :fechaInicio AND :fechaFin) as total_transacciones,
+                  (SELECT SUM(monto) FROM transaccion WHERE tipoTransaccion = 1 AND fecha BETWEEN :fechaInicio AND :fechaFin) as total_retiros,
+                  (SELECT SUM(monto) FROM transaccion WHERE tipoTransaccion = 2 AND fecha BETWEEN :fechaInicio AND :fechaFin) as total_depositos";
         
         $stmt = $this->db->prepare($query);
         $stmt->bindParam(':fechaInicio', $fechaInicio);
@@ -136,7 +136,7 @@ class ResumenEjecutivo {
                   SUM(CASE WHEN tipoTransaccion = 2 THEN 1 ELSE 0 END) as depositos,
                   SUM(CASE WHEN tipoTransaccion = 1 THEN monto ELSE 0 END) as monto_retiros,
                   SUM(CASE WHEN tipoTransaccion = 2 THEN monto ELSE 0 END) as monto_depositos
-                  FROM Transaccion
+                  FROM transaccion
                   WHERE fecha BETWEEN :fechaInicio AND :fechaFin
                   GROUP BY fecha
                   ORDER BY fecha DESC";
@@ -155,10 +155,10 @@ class ResumenEjecutivo {
     public function obtenerOficinasTopTransacciones($fechaInicio, $fechaFin, $limite = 5) {
         $query = "SELECT o.idOficina, o.nombre,
                   COUNT(t.idTransaccion) as total_transacciones
-                  FROM Oficina o
-                  INNER JOIN Persona p ON o.idOficina = p.idOficina
-                  INNER JOIN Cuenta c ON p.idPersona = c.idPersona
-                  INNER JOIN Transaccion t ON c.idCuenta = t.idCuenta
+                  FROM oficina o
+                  INNER JOIN persona p ON o.idOficina = p.idOficina
+                  INNER JOIN cuenta c ON p.idPersona = c.idPersona
+                  INNER JOIN transaccion t ON c.idCuenta = t.idCuenta
                   WHERE t.fecha BETWEEN :fechaInicio AND :fechaFin
                   GROUP BY o.idOficina, o.nombre
                   ORDER BY total_transacciones DESC
@@ -179,9 +179,9 @@ class ResumenEjecutivo {
     public function obtenerATMsTopTransacciones($fechaInicio, $fechaFin, $limite = 5) {
         $query = "SELECT a.idATM, a.ubicacion,
                   COUNT(ta.idTransaccion) as total_transacciones
-                  FROM ATM a
-                  INNER JOIN TransaccionATM ta ON a.idATM = ta.idATM
-                  INNER JOIN Transaccion t ON ta.idTransaccion = t.idTransaccion
+                  FROM atm a
+                  INNER JOIN transaccion_atm ta ON a.idATM = ta.idATM
+                  INNER JOIN transaccion t ON ta.idTransaccion = t.idTransaccion
                   WHERE t.fecha BETWEEN :fechaInicio AND :fechaFin
                   GROUP BY a.idATM, a.ubicacion
                   ORDER BY total_transacciones DESC
@@ -221,8 +221,8 @@ class RendimientoProducto {
                   AVG(c.saldo) as saldo_promedio,
                   MIN(c.fechaApertura) as primera_apertura,
                   MAX(c.fechaApertura) as ultima_apertura
-                  FROM Producto p
-                  LEFT JOIN Cuenta c ON p.idProducto = c.idProducto
+                  FROM producto p
+                  LEFT JOIN cuenta c ON p.idProducto = c.idProducto
                   GROUP BY p.idProducto, p.nombre, p.tipo
                   ORDER BY p.tipo, p.nombre";
         
@@ -242,9 +242,9 @@ class RendimientoProducto {
                   SUM(CASE WHEN t.tipoTransaccion = 2 THEN 1 ELSE 0 END) as total_depositos,
                   SUM(CASE WHEN t.tipoTransaccion = 1 THEN t.monto ELSE 0 END) as monto_retiros,
                   SUM(CASE WHEN t.tipoTransaccion = 2 THEN t.monto ELSE 0 END) as monto_depositos
-                  FROM Producto p
-                  LEFT JOIN Cuenta c ON p.idProducto = c.idProducto
-                  LEFT JOIN Transaccion t ON c.idCuenta = t.idCuenta
+                  FROM producto p
+                  LEFT JOIN cuenta c ON p.idProducto = c.idProducto
+                  LEFT JOIN transaccion t ON c.idCuenta = t.idCuenta
                   WHERE t.fecha BETWEEN :fechaInicio AND :fechaFin
                   GROUP BY p.idProducto, p.nombre, p.tipo
                   ORDER BY p.tipo, p.nombre";
@@ -265,8 +265,8 @@ class RendimientoProducto {
                   YEAR(c.fechaApertura) as anio,
                   MONTH(c.fechaApertura) as mes,
                   COUNT(c.idCuenta) as nuevas_cuentas
-                  FROM Producto p
-                  LEFT JOIN Cuenta c ON p.idProducto = c.idProducto
+                  FROM producto p
+                  LEFT JOIN cuenta c ON p.idProducto = c.idProducto
                   WHERE c.fechaApertura >= DATE_SUB(CURDATE(), INTERVAL :mesesAtras MONTH)
                   GROUP BY p.idProducto, p.nombre, p.tipo, YEAR(c.fechaApertura), MONTH(c.fechaApertura)
                   ORDER BY p.tipo, p.nombre, anio, mes";
@@ -298,8 +298,8 @@ class AuditoriaSistema {
     public function obtenerRegistrosAuditoria($fechaInicio, $fechaFin, $idUsuario = null, $tipoAccion = null) {
         $query = "SELECT a.idAuditoria, a.idUsuario, a.fechaHora, a.accion, a.tabla, 
                   a.idRegistro, a.detalles, u.usuario as nombre_usuario
-                  FROM Auditoria a
-                  LEFT JOIN Usuario u ON a.idUsuario = u.idUsuario
+                  FROM auditoria a
+                  LEFT JOIN usuario u ON a.idUsuario = u.idUsuario
                   WHERE DATE(a.fechaHora) BETWEEN :fechaInicio AND :fechaFin";
         
         // Agregar filtros opcionales
@@ -335,7 +335,7 @@ class AuditoriaSistema {
      */
     public function obtenerUsuarios() {
         $query = "SELECT idUsuario, usuario, nombre, rol
-                  FROM Usuario
+                  FROM usuario
                   ORDER BY usuario";
         
         $stmt = $this->db->prepare($query);
@@ -349,7 +349,7 @@ class AuditoriaSistema {
      */
     public function obtenerTiposAcciones() {
         $query = "SELECT DISTINCT accion
-                  FROM Auditoria
+                  FROM auditoria
                   ORDER BY accion";
         
         $stmt = $this->db->prepare($query);
@@ -366,7 +366,7 @@ class AuditoriaSistema {
                   COUNT(*) as total_registros,
                   COUNT(DISTINCT idUsuario) as total_usuarios,
                   accion, COUNT(*) as cantidad
-                  FROM Auditoria
+                  FROM auditoria
                   WHERE DATE(fechaHora) BETWEEN :fechaInicio AND :fechaFin
                   GROUP BY accion
                   ORDER BY cantidad DESC";
@@ -401,8 +401,8 @@ class MetricasServicio {
         $query = "SELECT o.idOficina, o.nombre,
                   AVG(a.tiempoAtencion) as tiempo_promedio,
                   COUNT(a.idAtencion) as total_atenciones
-                  FROM Oficina o
-                  LEFT JOIN Atencion a ON o.idOficina = a.idOficina
+                  FROM oficina o
+                  LEFT JOIN atencion a ON o.idOficina = a.idOficina
                   WHERE a.fecha BETWEEN :fechaInicio AND :fechaFin
                   GROUP BY o.idOficina, o.nombre
                   ORDER BY o.nombre";
@@ -423,8 +423,8 @@ class MetricasServicio {
         $query = "SELECT o.idOficina, o.nombre,
                   AVG(e.calificacion) as satisfaccion_promedio,
                   COUNT(e.idEncuesta) as total_encuestas
-                  FROM Oficina o
-                  LEFT JOIN Encuesta e ON o.idOficina = e.idOficina
+                  FROM oficina o
+                  LEFT JOIN encuesta e ON o.idOficina = e.idOficina
                   WHERE e.fecha BETWEEN :fechaInicio AND :fechaFin
                   GROUP BY o.idOficina, o.nombre
                   ORDER BY o.nombre";
@@ -445,8 +445,8 @@ class MetricasServicio {
         $query = "SELECT u.idUsuario, u.usuario, u.nombre,
                   COUNT(t.idTransaccion) as total_transacciones,
                   AVG(t.tiempo_proceso) as tiempo_promedio
-                  FROM Usuario u
-                  LEFT JOIN Transaccion t ON u.idUsuario = t.idUsuario
+                  FROM usuario u
+                  LEFT JOIN transaccion t ON u.idUsuario = t.idUsuario
                   WHERE u.rol = 'cajero' AND t.fecha BETWEEN :fechaInicio AND :fechaFin
                   GROUP BY u.idUsuario, u.usuario, u.nombre
                   ORDER BY total_transacciones DESC";
